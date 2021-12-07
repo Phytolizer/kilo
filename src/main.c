@@ -10,6 +10,12 @@
 
 #pragma endregion
 
+#pragma region defines
+
+#define CTRL_KEY(k) ((k)&0x1f)
+
+#pragma endregion
+
 #pragma region data
 
 struct termios g_origTermios;
@@ -78,7 +84,7 @@ int main()
 		{
 			printf("%d ('%c')\r\n", c, c);
 		}
-		if (c == 'q')
+		if (c == CTRL_KEY('q'))
 		{
 			break;
 		}
