@@ -149,7 +149,12 @@ void EditorDrawRows()
 	int y;
 	for (y = 0; y < g_editorConfig.screenRows; ++y)
 	{
-		write(STDOUT_FILENO, "~\r\n", 3);
+		write(STDOUT_FILENO, "~", 1);
+
+		if (y < g_editorConfig.screenRows - 1)
+		{
+			write(STDOUT_FILENO, "\r\n", 2);
+		}
 	}
 }
 
