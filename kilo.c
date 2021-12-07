@@ -1,5 +1,6 @@
 #pragma region includes
 
+#include "config.h"
 #include <ctype.h>
 #include <errno.h>
 #include <stdbool.h>
@@ -13,8 +14,6 @@
 #pragma endregion
 
 #pragma region defines
-
-#define KILO_VERSION "0.0.1"
 
 #define CTRL_KEY(k) ((k)&0x1f)
 
