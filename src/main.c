@@ -4,6 +4,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/ioctl.h>
 #include <termios.h>
 #include <unistd.h>
 
@@ -19,6 +20,8 @@
 
 struct EditorConfig
 {
+	int screenRows;
+	int screenCols;
 	struct termios origTermios;
 };
 
@@ -82,6 +85,20 @@ char EditorReadKey()
 	return c;
 }
 
+int GetWindowSize(int* rows, int* cols)
+{
+	struct winsize ws;
+
+	if (ioctl(STDOUT_FILENO, TIOCGWINSZ, &ws) == -1 || ws.ws_col == 0)
+	{
+		return -1;
+	}
+
+	*cols = ws.ws_col;
+	*rows = ws.ws_row;
+	return 0;
+}
+
 #pragma endregion
 
 #pragma region output
@@ -126,9 +143,18 @@ void EditorProcessKeypress()
 
 #pragma region init
 
+void InitEditor()
+{
+	if (GetWindowSize(&g_editorConfig.screenRows, &g_editorConfig.screenCols) == -1)
+	{
+		Die("GetWindowSize");
+	}
+}
+
 int main()
 {
 	EnableRawMode();
+	InitEditor();
 
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "EndlessLoop"
