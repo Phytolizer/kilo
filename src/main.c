@@ -17,7 +17,12 @@
 
 #pragma region data
 
-struct termios g_origTermios;
+struct EditorConfig
+{
+	struct termios origTermios;
+};
+
+struct EditorConfig g_editorConfig;
 
 #pragma endregion
 
@@ -32,14 +37,23 @@ void Die(const char* s)
 	exit(EXIT_FAILURE);
 }
 
+void DisableRawMode()
+{
+	if (tcsetattr(STDIN_FILENO, TCSAFLUSH, &g_editorConfig.origTermios) == -1)
+	{
+		Die("tcsetattr");
+	}
+}
+
 void EnableRawMode()
 {
-	if (tcgetattr(STDIN_FILENO, &g_origTermios) == -1)
+	if (tcgetattr(STDIN_FILENO, &g_editorConfig.origTermios) == -1)
 	{
 		Die("tcgetattr");
 	}
+	atexit(DisableRawMode);
 
-	struct termios raw = g_origTermios;
+	struct termios raw = g_editorConfig.origTermios;
 
 	raw.c_iflag &= ~(BRKINT | ICRNL | INPCK | ISTRIP | IXON);
 	raw.c_oflag &= ~(OPOST);
@@ -49,14 +63,6 @@ void EnableRawMode()
 	raw.c_cc[VTIME] = 1;
 
 	if (tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw) == -1)
-	{
-		Die("tcsetattr");
-	}
-}
-
-void DisableRawMode()
-{
-	if (tcsetattr(STDIN_FILENO, TCSAFLUSH, &g_origTermios) == -1)
 	{
 		Die("tcsetattr");
 	}
@@ -123,7 +129,6 @@ void EditorProcessKeypress()
 int main()
 {
 	EnableRawMode();
-	atexit(DisableRawMode);
 
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "EndlessLoop"

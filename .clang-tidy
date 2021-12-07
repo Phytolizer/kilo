@@ -9,3 +9,7 @@ CheckOptions:
     value: camelBack
   - key: readability-identifier-naming.GlobalVariablePrefix
     value: g_
+  - key: readability-identifier-naming.StructCase
+    value: CamelCase
+  - key: readability-identifier-naming.MemberCase
+    value: camelBack
