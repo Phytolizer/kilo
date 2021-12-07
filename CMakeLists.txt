@@ -5,5 +5,5 @@ project(
 	DESCRIPTION "A tiny text editor"
 )
 
-add_executable(kilo src/main.c)
+add_executable(kilo src/kilo.c)
 target_compile_features(kilo PRIVATE c_std_23)
