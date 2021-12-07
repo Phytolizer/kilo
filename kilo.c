@@ -24,6 +24,8 @@ enum EditorKey
 	ARROW_RIGHT,
 	ARROW_UP,
 	ARROW_DOWN,
+	PAGE_UP,
+	PAGE_DOWN,
 };
 
 #pragma endregion
@@ -114,6 +116,22 @@ int EditorReadKey()
 		{
 			switch (seq[1])
 			{
+			case '0' ... '9':
+				if (read(STDIN_FILENO, &seq[2], 1) != 1)
+				{
+					return '\x1b';
+				}
+				if (seq[2] == '~')
+				{
+					switch (seq[1])
+					{
+					case '5':
+						return PAGE_UP;
+					case '6':
+						return PAGE_DOWN;
+					}
+				}
+				break;
 			case 'A':
 				return ARROW_UP;
 			case 'B':
@@ -288,16 +306,28 @@ void EditorMoveCursor(int key)
 	switch (key)
 	{
 	case ARROW_LEFT:
-		--g_editorConfig.cursorX;
+		if (g_editorConfig.cursorX > 0)
+		{
+			--g_editorConfig.cursorX;
+		}
 		break;
 	case ARROW_RIGHT:
-		++g_editorConfig.cursorX;
+		if (g_editorConfig.cursorX < g_editorConfig.screenCols - 1)
+		{
+			++g_editorConfig.cursorX;
+		}
 		break;
 	case ARROW_UP:
-		--g_editorConfig.cursorY;
+		if (g_editorConfig.cursorY > 0)
+		{
+			--g_editorConfig.cursorY;
+		}
 		break;
 	case ARROW_DOWN:
-		++g_editorConfig.cursorY;
+		if (g_editorConfig.cursorY < g_editorConfig.screenRows - 1)
+		{
+			++g_editorConfig.cursorY;
+		}
 		break;
 	}
 }
@@ -312,6 +342,14 @@ void EditorProcessKeypress()
 		write(STDOUT_FILENO, "\x1b[2J", 4);
 		write(STDOUT_FILENO, "\x1b[H", 3);
 		exit(EXIT_SUCCESS);
+	case PAGE_UP:
+	case PAGE_DOWN: {
+		for (int times = g_editorConfig.screenRows; times > 0; --times)
+		{
+			EditorMoveCursor(c == PAGE_UP ? ARROW_UP : ARROW_DOWN);
+		}
+	}
+	break;
 	case ARROW_UP:
 	case ARROW_RIGHT:
 	case ARROW_DOWN:
