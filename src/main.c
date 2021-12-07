@@ -4,13 +4,13 @@
 #include <termios.h>
 #include <unistd.h>
 
-struct termios orig_termios;
+struct termios origTermios;
 
-void enableRawMode()
+void EnableRawMode()
 {
-	tcgetattr(STDIN_FILENO, &orig_termios);
+	tcgetattr(STDIN_FILENO, &origTermios);
 
-	struct termios raw = orig_termios;
+	struct termios raw = origTermios;
 
 	raw.c_iflag &= ~(ICRNL | IXON);
 	raw.c_oflag &= ~(OPOST);
@@ -19,15 +19,15 @@ void enableRawMode()
 	tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw);
 }
 
-void disableRawMode()
+void DisableRawMode()
 {
-	tcsetattr(STDIN_FILENO, TCSAFLUSH, &orig_termios);
+	tcsetattr(STDIN_FILENO, TCSAFLUSH, &origTermios);
 }
 
 int main()
 {
-	enableRawMode();
-	atexit(disableRawMode);
+	EnableRawMode();
+	atexit(DisableRawMode);
 
 	char c;
 	while (read(STDIN_FILENO, &c, 1) == 1 && c != 'q')
