@@ -14,6 +14,8 @@
 
 #pragma region defines
 
+#define KILO_VERSION "0.0.1"
+
 #define CTRL_KEY(k) ((k)&0x1f)
 
 #pragma endregion
@@ -185,8 +187,32 @@ void EditorDrawRows(struct AppendBuffer* ab)
 	int y;
 	for (y = 0; y < g_editorConfig.screenRows; ++y)
 	{
-		AppendBufferAppend(ab, "~", 1);
+		if (y == g_editorConfig.screenRows / 3)
+		{
+			char welcome[80];
+			int welcomeLen = snprintf(welcome, sizeof(welcome), "Kilo editor -- version %s", KILO_VERSION);
+			if (welcomeLen > g_editorConfig.screenCols)
+			{
+				welcomeLen = g_editorConfig.screenCols;
+			}
+			int padding = (g_editorConfig.screenCols - welcomeLen) / 2;
+			if (padding > 0)
+			{
+				AppendBufferAppend(ab, "~", 1);
+				--padding;
+			}
+			for (; padding > 0; --padding)
+			{
+				AppendBufferAppend(ab, " ", 1);
+			}
+			AppendBufferAppend(ab, welcome, welcomeLen);
+		}
+		else
+		{
+			AppendBufferAppend(ab, "~", 1);
+		}
 
+		AppendBufferAppend(ab, "\x1b[K", 3);
 		if (y < g_editorConfig.screenRows - 1)
 		{
 			AppendBufferAppend(ab, "\r\n", 2);
@@ -199,7 +225,6 @@ void EditorRefreshScreen()
 	struct AppendBuffer ab = ABUF_INIT;
 
 	AppendBufferAppend(&ab, "\x1b[?25l", 6);
-	AppendBufferAppend(&ab, "\x1b[2J", 4);
 	AppendBufferAppend(&ab, "\x1b[H", 3);
 
 	EditorDrawRows(&ab);
