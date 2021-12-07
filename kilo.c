@@ -18,6 +18,14 @@
 
 #define CTRL_KEY(k) ((k)&0x1f)
 
+enum EditorKey
+{
+	ARROW_LEFT = 1000,
+	ARROW_RIGHT,
+	ARROW_UP,
+	ARROW_DOWN,
+};
+
 #pragma endregion
 
 #pragma region data
@@ -77,7 +85,7 @@ void EnableRawMode()
 	}
 }
 
-char EditorReadKey()
+int EditorReadKey()
 {
 	int nread;
 	char c;
@@ -107,13 +115,13 @@ char EditorReadKey()
 			switch (seq[1])
 			{
 			case 'A':
-				return 'w';
+				return ARROW_UP;
 			case 'B':
-				return 's';
+				return ARROW_DOWN;
 			case 'C':
-				return 'd';
+				return ARROW_RIGHT;
 			case 'D':
-				return 'a';
+				return ARROW_LEFT;
 			}
 		}
 
@@ -275,20 +283,20 @@ void EditorRefreshScreen()
 
 #pragma region input
 
-void EditorMoveCursor(char key)
+void EditorMoveCursor(int key)
 {
 	switch (key)
 	{
-	case 'a':
+	case ARROW_LEFT:
 		--g_editorConfig.cursorX;
 		break;
-	case 'd':
+	case ARROW_RIGHT:
 		++g_editorConfig.cursorX;
 		break;
-	case 'w':
+	case ARROW_UP:
 		--g_editorConfig.cursorY;
 		break;
-	case 's':
+	case ARROW_DOWN:
 		++g_editorConfig.cursorY;
 		break;
 	}
@@ -296,7 +304,7 @@ void EditorMoveCursor(char key)
 
 void EditorProcessKeypress()
 {
-	char c = EditorReadKey();
+	int c = EditorReadKey();
 
 	switch (c)
 	{
@@ -304,10 +312,10 @@ void EditorProcessKeypress()
 		write(STDOUT_FILENO, "\x1b[2J", 4);
 		write(STDOUT_FILENO, "\x1b[H", 3);
 		exit(EXIT_SUCCESS);
-	case 'a':
-	case 'd':
-	case 'w':
-	case 's':
+	case ARROW_UP:
+	case ARROW_RIGHT:
+	case ARROW_DOWN:
+	case ARROW_LEFT:
 		EditorMoveCursor(c);
 		break;
 	}
