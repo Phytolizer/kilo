@@ -5,6 +5,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <sys/ioctl.h>
 #include <termios.h>
 #include <unistd.h>
@@ -142,30 +143,70 @@ int GetWindowSize(int* rows, int* cols)
 
 #pragma endregion
 
+#pragma region append buffer
+
+struct AppendBuffer
+{
+	char* buffer;
+	int length;
+};
+
+#define ABUF_INIT                                                                                                      \
+	(struct AppendBuffer)                                                                                              \
+	{                                                                                                                  \
+		.buffer = NULL, .length = 0,                                                                                   \
+	}
+
+void AppendBufferAppend(struct AppendBuffer* ab, const char* s, int len)
+{
+	char* newBuf = realloc(ab->buffer, ab->length + len);
+
+	if (newBuf == NULL)
+	{
+		return;
+	}
+
+	memcpy(&newBuf[ab->length], s, len);
+	ab->buffer = newBuf;
+	ab->length += len;
+}
+
+void AppendBufferFree(struct AppendBuffer* ab)
+{
+	free(ab->buffer);
+}
+
+#pragma endregion
+
 #pragma region output
 
-void EditorDrawRows()
+void EditorDrawRows(struct AppendBuffer* ab)
 {
 	int y;
 	for (y = 0; y < g_editorConfig.screenRows; ++y)
 	{
-		write(STDOUT_FILENO, "~", 1);
+		AppendBufferAppend(ab, "~", 1);
 
 		if (y < g_editorConfig.screenRows - 1)
 		{
-			write(STDOUT_FILENO, "\r\n", 2);
+			AppendBufferAppend(ab, "\r\n", 2);
 		}
 	}
 }
 
 void EditorRefreshScreen()
 {
-	write(STDOUT_FILENO, "\x1b[2J", 4);
-	write(STDOUT_FILENO, "\x1b[H", 3);
+	struct AppendBuffer ab = ABUF_INIT;
 
-	EditorDrawRows();
+	AppendBufferAppend(&ab, "\x1b[2J", 4);
+	AppendBufferAppend(&ab, "\x1b[H", 3);
 
-	write(STDOUT_FILENO, "\x1b[H", 3);
+	EditorDrawRows(&ab);
+
+	AppendBufferAppend(&ab, "\x1b[H", 3);
+
+	write(STDOUT_FILENO, ab.buffer, ab.length);
+	AppendBufferFree(&ab);
 }
 
 #pragma endregion
