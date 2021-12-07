@@ -1,6 +1,5 @@
 #pragma region includes
 
-#include <ctype.h>
 #include <errno.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -76,6 +75,15 @@ char EditorReadKey()
 
 #pragma endregion
 
+#pragma region output
+
+void EditorRefreshScreen()
+{
+	write(STDOUT_FILENO, "\x1b[2J", 4);
+}
+
+#pragma endregion
+
 #pragma region input
 
 void EditorProcessKeypress()
@@ -102,6 +110,7 @@ int main()
 #pragma ide diagnostic ignored "EndlessLoop"
 	while (true)
 	{
+		EditorRefreshScreen();
 		EditorProcessKeypress();
 	}
 #pragma clang diagnostic pop
