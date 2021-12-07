@@ -13,3 +13,5 @@ CheckOptions:
     value: CamelCase
   - key: readability-identifier-naming.MemberCase
     value: camelBack
+  - key: readability-identifier-naming.TypedefCase
+    value: CamelCase

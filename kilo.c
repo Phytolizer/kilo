@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/ioctl.h>
+#include <sys/types.h>
 #include <termios.h>
 #include <unistd.h>
 
@@ -34,12 +35,20 @@ enum EditorKey
 
 #pragma region data
 
+typedef struct EditorRow
+{
+	int size;
+	char* chars;
+} EditorRow;
+
 struct EditorConfig
 {
 	int cursorX;
 	int cursorY;
 	int screenRows;
 	int screenCols;
+	int numRows;
+	EditorRow row;
 	struct termios origTermios;
 };
 
@@ -230,6 +239,22 @@ int GetWindowSize(int* rows, int* cols)
 
 #pragma endregion
 
+#pragma region file IO
+
+void EditorOpen()
+{
+	char* line = "Hello, world!";
+	ssize_t lineLen = 13;
+
+	g_editorConfig.row.size = lineLen;
+	g_editorConfig.row.chars = malloc(lineLen + 1);
+	memcpy(g_editorConfig.row.chars, line, lineLen);
+	g_editorConfig.row.chars[lineLen] = '\0';
+	g_editorConfig.numRows = 1;
+}
+
+#pragma endregion
+
 #pragma region append buffer
 
 struct AppendBuffer
@@ -272,29 +297,41 @@ void EditorDrawRows(struct AppendBuffer* ab)
 	int y;
 	for (y = 0; y < g_editorConfig.screenRows; ++y)
 	{
-		if (y == g_editorConfig.screenRows / 3)
+		if (y >= g_editorConfig.numRows)
 		{
-			char welcome[80];
-			int welcomeLen = snprintf(welcome, sizeof(welcome), "Kilo editor -- version %s", KILO_VERSION);
-			if (welcomeLen > g_editorConfig.screenCols)
+			if (y == g_editorConfig.screenRows / 3)
 			{
-				welcomeLen = g_editorConfig.screenCols;
+				char welcome[80];
+				int welcomeLen = snprintf(welcome, sizeof(welcome), "Kilo editor -- version %s", KILO_VERSION);
+				if (welcomeLen > g_editorConfig.screenCols)
+				{
+					welcomeLen = g_editorConfig.screenCols;
+				}
+				int padding = (g_editorConfig.screenCols - welcomeLen) / 2;
+				if (padding > 0)
+				{
+					AppendBufferAppend(ab, "~", 1);
+					--padding;
+				}
+				for (; padding > 0; --padding)
+				{
+					AppendBufferAppend(ab, " ", 1);
+				}
+				AppendBufferAppend(ab, welcome, welcomeLen);
 			}
-			int padding = (g_editorConfig.screenCols - welcomeLen) / 2;
-			if (padding > 0)
+			else
 			{
 				AppendBufferAppend(ab, "~", 1);
-				--padding;
 			}
-			for (; padding > 0; --padding)
-			{
-				AppendBufferAppend(ab, " ", 1);
-			}
-			AppendBufferAppend(ab, welcome, welcomeLen);
 		}
 		else
 		{
-			AppendBufferAppend(ab, "~", 1);
+			int len = g_editorConfig.row.size;
+			if (len > g_editorConfig.screenCols)
+			{
+				len = g_editorConfig.screenCols;
+			}
+			AppendBufferAppend(ab, g_editorConfig.row.chars, len);
 		}
 
 		AppendBufferAppend(ab, "\x1b[K", 3);
@@ -399,6 +436,7 @@ void InitEditor()
 {
 	g_editorConfig.cursorX = 0;
 	g_editorConfig.cursorY = 0;
+	g_editorConfig.numRows = 0;
 
 	if (GetWindowSize(&g_editorConfig.screenRows, &g_editorConfig.screenCols) == -1)
 	{
@@ -410,6 +448,7 @@ int main()
 {
 	EnableRawMode();
 	InitEditor();
+	EditorOpen();
 
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "EndlessLoop"
