@@ -198,12 +198,14 @@ void EditorRefreshScreen()
 {
 	struct AppendBuffer ab = ABUF_INIT;
 
+	AppendBufferAppend(&ab, "\x1b[?25l", 6);
 	AppendBufferAppend(&ab, "\x1b[2J", 4);
 	AppendBufferAppend(&ab, "\x1b[H", 3);
 
 	EditorDrawRows(&ab);
 
 	AppendBufferAppend(&ab, "\x1b[H", 3);
+	AppendBufferAppend(&ab, "\x1b[?25h", 6);
 
 	write(STDOUT_FILENO, ab.buffer, ab.length);
 	AppendBufferFree(&ab);
