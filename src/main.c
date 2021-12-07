@@ -25,6 +25,9 @@ struct termios g_origTermios;
 
 void Die(const char* s)
 {
+	write(STDOUT_FILENO, "\x1b[2J", 4);
+	write(STDOUT_FILENO, "\x1b[H", 3);
+
 	perror(s);
 	exit(EXIT_FAILURE);
 }
@@ -77,9 +80,23 @@ char EditorReadKey()
 
 #pragma region output
 
+void EditorDrawRows()
+{
+	int y;
+	for (y = 0; y < 24; ++y)
+	{
+		write(STDOUT_FILENO, "~\r\n", 3);
+	}
+}
+
 void EditorRefreshScreen()
 {
 	write(STDOUT_FILENO, "\x1b[2J", 4);
+	write(STDOUT_FILENO, "\x1b[H", 3);
+
+	EditorDrawRows();
+
+	write(STDOUT_FILENO, "\x1b[H", 3);
 }
 
 #pragma endregion
@@ -93,6 +110,8 @@ void EditorProcessKeypress()
 	switch (c)
 	{
 	case CTRL_KEY('q'):
+		write(STDOUT_FILENO, "\x1b[2J", 4);
+		write(STDOUT_FILENO, "\x1b[H", 3);
 		exit(EXIT_SUCCESS);
 	}
 }
