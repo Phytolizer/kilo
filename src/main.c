@@ -24,6 +24,8 @@
 
 struct EditorConfig
 {
+	int cursorX;
+	int cursorY;
 	int screenRows;
 	int screenCols;
 	struct termios origTermios;
@@ -229,7 +231,9 @@ void EditorRefreshScreen()
 
 	EditorDrawRows(&ab);
 
-	AppendBufferAppend(&ab, "\x1b[H", 3);
+	char buf[32];
+	snprintf(buf, sizeof(buf), "\x1b[%d;%dH", g_editorConfig.cursorY + 1, g_editorConfig.cursorX + 1);
+	AppendBufferAppend(&ab, buf, strlen(buf));
 	AppendBufferAppend(&ab, "\x1b[?25h", 6);
 
 	write(STDOUT_FILENO, ab.buffer, ab.length);
@@ -239,6 +243,25 @@ void EditorRefreshScreen()
 #pragma endregion
 
 #pragma region input
+
+void EditorMoveCursor(char key)
+{
+	switch (key)
+	{
+	case 'a':
+		--g_editorConfig.cursorX;
+		break;
+	case 'd':
+		++g_editorConfig.cursorX;
+		break;
+	case 'w':
+		--g_editorConfig.cursorY;
+		break;
+	case 's':
+		++g_editorConfig.cursorY;
+		break;
+	}
+}
 
 void EditorProcessKeypress()
 {
@@ -250,6 +273,12 @@ void EditorProcessKeypress()
 		write(STDOUT_FILENO, "\x1b[2J", 4);
 		write(STDOUT_FILENO, "\x1b[H", 3);
 		exit(EXIT_SUCCESS);
+	case 'a':
+	case 'd':
+	case 'w':
+	case 's':
+		EditorMoveCursor(c);
+		break;
 	}
 }
 
@@ -259,6 +288,9 @@ void EditorProcessKeypress()
 
 void InitEditor()
 {
+	g_editorConfig.cursorX = 0;
+	g_editorConfig.cursorY = 0;
+
 	if (GetWindowSize(&g_editorConfig.screenRows, &g_editorConfig.screenCols) == -1)
 	{
 		Die("GetWindowSize");
