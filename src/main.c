@@ -1,3 +1,5 @@
+#pragma region includes
+
 #include <ctype.h>
 #include <errno.h>
 #include <stdbool.h>
@@ -6,7 +8,15 @@
 #include <termios.h>
 #include <unistd.h>
 
+#pragma endregion
+
+#pragma region data
+
 struct termios g_origTermios;
+
+#pragma endregion
+
+#pragma region terminal
 
 void Die(const char* s)
 {
@@ -44,6 +54,10 @@ void DisableRawMode()
 	}
 }
 
+#pragma endregion
+
+#pragma region init
+
 int main()
 {
 	EnableRawMode();
@@ -72,3 +86,5 @@ int main()
 
 	return 0;
 }
+
+#pragma endregion
