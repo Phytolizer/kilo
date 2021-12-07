@@ -7,3 +7,5 @@ CheckOptions:
     value: CamelCase
   - key: readability-identifier-naming.VariableCase
     value: camelBack
+  - key: readability-identifier-naming.GlobalVariablePrefix
+    value: g_
