@@ -60,6 +60,35 @@ void DisableRawMode()
 	}
 }
 
+char EditorReadKey()
+{
+	int nread;
+	char c;
+	while ((nread = read(STDIN_FILENO, &c, 1)) != 1)
+	{
+		if (nread == -1 && errno != EAGAIN)
+		{
+			Die("read");
+		}
+	}
+	return c;
+}
+
+#pragma endregion
+
+#pragma region input
+
+void EditorProcessKeypress()
+{
+	char c = EditorReadKey();
+
+	switch (c)
+	{
+	case CTRL_KEY('q'):
+		exit(EXIT_SUCCESS);
+	}
+}
+
 #pragma endregion
 
 #pragma region init
@@ -69,28 +98,13 @@ int main()
 	EnableRawMode();
 	atexit(DisableRawMode);
 
+#pragma clang diagnostic push
+#pragma ide diagnostic ignored "EndlessLoop"
 	while (true)
 	{
-		char c = '\0';
-		if (read(STDIN_FILENO, &c, 1) == -1 && errno != EAGAIN)
-		{
-			Die("read");
-		}
-		if (iscntrl(c))
-		{
-			printf("%d\r\n", c);
-		}
-		else
-		{
-			printf("%d ('%c')\r\n", c, c);
-		}
-		if (c == CTRL_KEY('q'))
-		{
-			break;
-		}
+		EditorProcessKeypress();
 	}
-
-	return 0;
+#pragma clang diagnostic pop
 }
 
 #pragma endregion
