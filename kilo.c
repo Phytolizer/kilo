@@ -49,6 +49,7 @@ struct EditorConfig
 {
 	int cursorX;
 	int cursorY;
+	int rowOffset;
 	int screenRows;
 	int screenCols;
 	int numRows;
@@ -323,12 +324,25 @@ void AppendBufferFree(struct AppendBuffer* ab)
 
 #pragma region output
 
+void EditorScroll()
+{
+	if (g_editorConfig.cursorY < g_editorConfig.rowOffset)
+	{
+		g_editorConfig.rowOffset = g_editorConfig.cursorY;
+	}
+	if (g_editorConfig.cursorY >= g_editorConfig.rowOffset + g_editorConfig.screenRows)
+	{
+		g_editorConfig.rowOffset = g_editorConfig.cursorY - g_editorConfig.screenRows + 1;
+	}
+}
+
 void EditorDrawRows(struct AppendBuffer* ab)
 {
 	int y;
 	for (y = 0; y < g_editorConfig.screenRows; ++y)
 	{
-		if (y >= g_editorConfig.numRows)
+		int fileRow = y + g_editorConfig.rowOffset;
+		if (fileRow >= g_editorConfig.numRows)
 		{
 			if (g_editorConfig.numRows == 0 && y == g_editorConfig.screenRows / 3)
 			{
@@ -357,12 +371,12 @@ void EditorDrawRows(struct AppendBuffer* ab)
 		}
 		else
 		{
-			int len = g_editorConfig.row[y].size;
+			int len = g_editorConfig.row[fileRow].size;
 			if (len > g_editorConfig.screenCols)
 			{
 				len = g_editorConfig.screenCols;
 			}
-			AppendBufferAppend(ab, g_editorConfig.row[y].chars, len);
+			AppendBufferAppend(ab, g_editorConfig.row[fileRow].chars, len);
 		}
 
 		AppendBufferAppend(ab, "\x1b[K", 3);
@@ -375,6 +389,8 @@ void EditorDrawRows(struct AppendBuffer* ab)
 
 void EditorRefreshScreen()
 {
+	EditorScroll();
+
 	struct AppendBuffer ab = ABUF_INIT;
 
 	AppendBufferAppend(&ab, "\x1b[?25l", 6);
@@ -383,7 +399,8 @@ void EditorRefreshScreen()
 	EditorDrawRows(&ab);
 
 	char buf[32];
-	snprintf(buf, sizeof(buf), "\x1b[%d;%dH", g_editorConfig.cursorY + 1, g_editorConfig.cursorX + 1);
+	snprintf(buf, sizeof(buf), "\x1b[%d;%dH", g_editorConfig.cursorY - g_editorConfig.rowOffset + 1,
+	         g_editorConfig.cursorX + 1);
 	AppendBufferAppend(&ab, buf, strlen(buf));
 	AppendBufferAppend(&ab, "\x1b[?25h", 6);
 
@@ -418,7 +435,7 @@ void EditorMoveCursor(int key)
 		}
 		break;
 	case ARROW_DOWN:
-		if (g_editorConfig.cursorY < g_editorConfig.screenRows - 1)
+		if (g_editorConfig.cursorY < g_editorConfig.numRows)
 		{
 			++g_editorConfig.cursorY;
 		}
@@ -469,6 +486,7 @@ void InitEditor()
 	g_editorConfig.cursorY = 0;
 	g_editorConfig.numRows = 0;
 	g_editorConfig.row = NULL;
+	g_editorConfig.rowOffset = 0;
 
 	if (GetWindowSize(&g_editorConfig.screenRows, &g_editorConfig.screenCols) == -1)
 	{
