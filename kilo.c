@@ -456,6 +456,12 @@ void Editor_MoveCursor(int key)
 		}
 		break;
 	}
+	row = (g_editorConfig.cursorY >= g_editorConfig.numRows) ? NULL : &g_editorConfig.row[g_editorConfig.cursorY];
+	int rowLen = row ? row->size : 0;
+	if (g_editorConfig.cursorX > rowLen)
+	{
+		g_editorConfig.cursorX = rowLen;
+	}
 }
 
 void Editor_ProcessKeypress()
