@@ -104,7 +104,7 @@ void EnableRawMode()
 	}
 }
 
-int EditorReadKey()
+int Editor_ReadKey()
 {
 	int nread;
 	char c;
@@ -247,7 +247,7 @@ int GetWindowSize(int* rows, int* cols)
 
 // #region row operations
 
-void EditorAppendRow(char* s, size_t len)
+void Editor_AppendRow(char* s, size_t len)
 {
 	g_editorConfig.row = realloc(g_editorConfig.row, sizeof(EditorRow) * (g_editorConfig.numRows + 1));
 
@@ -263,7 +263,7 @@ void EditorAppendRow(char* s, size_t len)
 
 // #region file IO
 
-void EditorOpen(char* filename)
+void Editor_Open(char* filename)
 {
 	FILE* fp = fopen(filename, "r");
 	if (fp == NULL)
@@ -280,7 +280,7 @@ void EditorOpen(char* filename)
 		{
 			--linelen;
 		}
-		EditorAppendRow(line, linelen);
+		Editor_AppendRow(line, linelen);
 	}
 	free(line);
 	fclose(fp);
@@ -325,7 +325,7 @@ void AppendBuffer_Free(struct AppendBuffer* ab)
 
 // #region output
 
-void EditorScroll()
+void Editor_Scroll()
 {
 	if (g_editorConfig.cursorY < g_editorConfig.rowOffset)
 	{
@@ -345,7 +345,7 @@ void EditorScroll()
 	}
 }
 
-void EditorDrawRows(struct AppendBuffer* ab)
+void Editor_DrawRows(struct AppendBuffer* ab)
 {
 	int y;
 	for (y = 0; y < g_editorConfig.screenRows; ++y)
@@ -400,20 +400,20 @@ void EditorDrawRows(struct AppendBuffer* ab)
 	}
 }
 
-void EditorRefreshScreen()
+void Editor_RefreshScreen()
 {
-	EditorScroll();
+	Editor_Scroll();
 
 	struct AppendBuffer ab = APPEND_BUFFER_INIT;
 
 	AppendBuffer_Append(&ab, "\x1b[?25l", 6);
 	AppendBuffer_Append(&ab, "\x1b[H", 3);
 
-	EditorDrawRows(&ab);
+	Editor_DrawRows(&ab);
 
 	char buf[32];
 	snprintf(buf, sizeof(buf), "\x1b[%d;%dH", g_editorConfig.cursorY - g_editorConfig.rowOffset + 1,
-	         g_editorConfig.cursorX + 1);
+	         g_editorConfig.cursorX - g_editorConfig.colOffset + 1);
 	AppendBuffer_Append(&ab, buf, strlen(buf));
 	AppendBuffer_Append(&ab, "\x1b[?25h", 6);
 
@@ -425,7 +425,7 @@ void EditorRefreshScreen()
 
 // #region input
 
-void EditorMoveCursor(int key)
+void Editor_MoveCursor(int key)
 {
 	switch (key)
 	{
@@ -453,9 +453,9 @@ void EditorMoveCursor(int key)
 	}
 }
 
-void EditorProcessKeypress()
+void Editor_ProcessKeypress()
 {
-	int c = EditorReadKey();
+	int c = Editor_ReadKey();
 
 	switch (c)
 	{
@@ -473,7 +473,7 @@ void EditorProcessKeypress()
 	case PAGE_DOWN: {
 		for (int times = g_editorConfig.screenRows; times > 0; --times)
 		{
-			EditorMoveCursor(c == PAGE_UP ? ARROW_UP : ARROW_DOWN);
+			Editor_MoveCursor(c == PAGE_UP ? ARROW_UP : ARROW_DOWN);
 		}
 	}
 	break;
@@ -481,7 +481,7 @@ void EditorProcessKeypress()
 	case ARROW_RIGHT:
 	case ARROW_DOWN:
 	case ARROW_LEFT:
-		EditorMoveCursor(c);
+		Editor_MoveCursor(c);
 		break;
 	}
 }
@@ -490,7 +490,7 @@ void EditorProcessKeypress()
 
 // #region init
 
-void InitEditor()
+void Editor_Init()
 {
 	g_editorConfig.cursorX = 0;
 	g_editorConfig.cursorY = 0;
@@ -508,18 +508,18 @@ void InitEditor()
 int main(int argc, char** argv)
 {
 	EnableRawMode();
-	InitEditor();
+	Editor_Init();
 	if (argc >= 2)
 	{
-		EditorOpen(argv[1]);
+		Editor_Open(argv[1]);
 	}
 
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "EndlessLoop"
 	while (true)
 	{
-		EditorRefreshScreen();
-		EditorProcessKeypress();
+		Editor_RefreshScreen();
+		Editor_ProcessKeypress();
 	}
 #pragma clang diagnostic pop
 }
