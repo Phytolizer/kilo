@@ -1,4 +1,4 @@
-#pragma region includes
+// #region includes
 
 #define _DEFAULT_SOURCE
 #define _BSD_SOURCE
@@ -16,9 +16,9 @@
 #include <termios.h>
 #include <unistd.h>
 
-#pragma endregion
+// #endregion
 
-#pragma region defines
+// #region defines
 
 #define CTRL_KEY(k) ((k)&0x1f)
 
@@ -35,9 +35,9 @@ enum EditorKey
 	PAGE_DOWN,
 };
 
-#pragma endregion
+// #endregion
 
-#pragma region data
+// #region data
 
 typedef struct EditorRow
 {
@@ -59,9 +59,9 @@ struct EditorConfig
 
 struct EditorConfig g_editorConfig;
 
-#pragma endregion
+// #endregion
 
-#pragma region terminal
+// #region terminal
 
 void Die(const char* s)
 {
@@ -242,9 +242,9 @@ int GetWindowSize(int* rows, int* cols)
 	return 0;
 }
 
-#pragma endregion
+// #endregion
 
-#pragma region row operations
+// #region row operations
 
 void EditorAppendRow(char* s, size_t len)
 {
@@ -258,9 +258,9 @@ void EditorAppendRow(char* s, size_t len)
 	++g_editorConfig.numRows;
 }
 
-#pragma endregion
+// #endregion
 
-#pragma region file IO
+// #region file IO
 
 void EditorOpen(char* filename)
 {
@@ -285,9 +285,9 @@ void EditorOpen(char* filename)
 	fclose(fp);
 }
 
-#pragma endregion
+// #endregion
 
-#pragma region append buffer
+// #region append buffer
 
 struct AppendBuffer
 {
@@ -320,9 +320,9 @@ void AppendBufferFree(struct AppendBuffer* ab)
 	free(ab->buffer);
 }
 
-#pragma endregion
+// #endregion
 
-#pragma region output
+// #region output
 
 void EditorScroll()
 {
@@ -408,9 +408,9 @@ void EditorRefreshScreen()
 	AppendBufferFree(&ab);
 }
 
-#pragma endregion
+// #endregion
 
-#pragma region input
+// #region input
 
 void EditorMoveCursor(int key)
 {
@@ -476,9 +476,9 @@ void EditorProcessKeypress()
 	}
 }
 
-#pragma endregion
+// #endregion
 
-#pragma region init
+// #region init
 
 void InitEditor()
 {
@@ -513,4 +513,4 @@ int main(int argc, char** argv)
 #pragma clang diagnostic pop
 }
 
-#pragma endregion
+// #endregion
