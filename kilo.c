@@ -295,13 +295,13 @@ struct AppendBuffer
 	int length;
 };
 
-#define ABUF_INIT                                                                                                      \
+#define APPEND_BUFFER_INIT                                                                                             \
 	(struct AppendBuffer)                                                                                              \
 	{                                                                                                                  \
 		.buffer = NULL, .length = 0,                                                                                   \
 	}
 
-void AppendBufferAppend(struct AppendBuffer* ab, const char* s, int len)
+void AppendBuffer_Append(struct AppendBuffer* ab, const char* s, int len)
 {
 	char* newBuf = realloc(ab->buffer, ab->length + len);
 
@@ -315,7 +315,7 @@ void AppendBufferAppend(struct AppendBuffer* ab, const char* s, int len)
 	ab->length += len;
 }
 
-void AppendBufferFree(struct AppendBuffer* ab)
+void AppendBuffer_Free(struct AppendBuffer* ab)
 {
 	free(ab->buffer);
 }
@@ -355,18 +355,18 @@ void EditorDrawRows(struct AppendBuffer* ab)
 				int padding = (g_editorConfig.screenCols - welcomeLen) / 2;
 				if (padding > 0)
 				{
-					AppendBufferAppend(ab, "~", 1);
+					AppendBuffer_Append(ab, "~", 1);
 					--padding;
 				}
 				for (; padding > 0; --padding)
 				{
-					AppendBufferAppend(ab, " ", 1);
+					AppendBuffer_Append(ab, " ", 1);
 				}
-				AppendBufferAppend(ab, welcome, welcomeLen);
+				AppendBuffer_Append(ab, welcome, welcomeLen);
 			}
 			else
 			{
-				AppendBufferAppend(ab, "~", 1);
+				AppendBuffer_Append(ab, "~", 1);
 			}
 		}
 		else
@@ -376,13 +376,13 @@ void EditorDrawRows(struct AppendBuffer* ab)
 			{
 				len = g_editorConfig.screenCols;
 			}
-			AppendBufferAppend(ab, g_editorConfig.row[fileRow].chars, len);
+			AppendBuffer_Append(ab, g_editorConfig.row[fileRow].chars, len);
 		}
 
-		AppendBufferAppend(ab, "\x1b[K", 3);
+		AppendBuffer_Append(ab, "\x1b[K", 3);
 		if (y < g_editorConfig.screenRows - 1)
 		{
-			AppendBufferAppend(ab, "\r\n", 2);
+			AppendBuffer_Append(ab, "\r\n", 2);
 		}
 	}
 }
@@ -391,21 +391,21 @@ void EditorRefreshScreen()
 {
 	EditorScroll();
 
-	struct AppendBuffer ab = ABUF_INIT;
+	struct AppendBuffer ab = APPEND_BUFFER_INIT;
 
-	AppendBufferAppend(&ab, "\x1b[?25l", 6);
-	AppendBufferAppend(&ab, "\x1b[H", 3);
+	AppendBuffer_Append(&ab, "\x1b[?25l", 6);
+	AppendBuffer_Append(&ab, "\x1b[H", 3);
 
 	EditorDrawRows(&ab);
 
 	char buf[32];
 	snprintf(buf, sizeof(buf), "\x1b[%d;%dH", g_editorConfig.cursorY - g_editorConfig.rowOffset + 1,
 	         g_editorConfig.cursorX + 1);
-	AppendBufferAppend(&ab, buf, strlen(buf));
-	AppendBufferAppend(&ab, "\x1b[?25h", 6);
+	AppendBuffer_Append(&ab, buf, strlen(buf));
+	AppendBuffer_Append(&ab, "\x1b[?25h", 6);
 
 	write(STDOUT_FILENO, ab.buffer, ab.length);
-	AppendBufferFree(&ab);
+	AppendBuffer_Free(&ab);
 }
 
 // #endregion
