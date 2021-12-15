@@ -436,11 +436,21 @@ void Editor_MoveCursor(int key)
 		{
 			--g_editorConfig.cursorX;
 		}
+		else if (g_editorConfig.cursorY > 0)
+		{
+			--g_editorConfig.cursorY;
+			g_editorConfig.cursorX = g_editorConfig.row[g_editorConfig.cursorY].size;
+		}
 		break;
 	case ARROW_RIGHT:
 		if (row && g_editorConfig.cursorX < row->size)
 		{
 			++g_editorConfig.cursorX;
+		}
+		else if (row && g_editorConfig.cursorX == row->size)
+		{
+			++g_editorConfig.cursorY;
+			g_editorConfig.cursorX = 0;
 		}
 		break;
 	case ARROW_UP:
