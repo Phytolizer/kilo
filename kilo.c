@@ -427,6 +427,8 @@ void Editor_RefreshScreen()
 
 void Editor_MoveCursor(int key)
 {
+	EditorRow* row =
+	    (g_editorConfig.cursorY >= g_editorConfig.numRows) ? NULL : &g_editorConfig.row[g_editorConfig.cursorY];
 	switch (key)
 	{
 	case ARROW_LEFT:
@@ -436,7 +438,10 @@ void Editor_MoveCursor(int key)
 		}
 		break;
 	case ARROW_RIGHT:
-		++g_editorConfig.cursorX;
+		if (row && g_editorConfig.cursorX < row->size)
+		{
+			++g_editorConfig.cursorX;
+		}
 		break;
 	case ARROW_UP:
 		if (g_editorConfig.cursorY > 0)
