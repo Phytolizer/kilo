@@ -50,6 +50,7 @@ struct EditorConfig
 	int cursorX;
 	int cursorY;
 	int rowOffset;
+	int colOffset;
 	int screenRows;
 	int screenCols;
 	int numRows;
@@ -334,6 +335,14 @@ void EditorScroll()
 	{
 		g_editorConfig.rowOffset = g_editorConfig.cursorY - g_editorConfig.screenRows + 1;
 	}
+	if (g_editorConfig.cursorX < g_editorConfig.colOffset)
+	{
+		g_editorConfig.colOffset = g_editorConfig.cursorX;
+	}
+	if (g_editorConfig.cursorX >= g_editorConfig.colOffset + g_editorConfig.screenCols)
+	{
+		g_editorConfig.colOffset = g_editorConfig.cursorX - g_editorConfig.screenCols + 1;
+	}
 }
 
 void EditorDrawRows(struct AppendBuffer* ab)
@@ -371,12 +380,16 @@ void EditorDrawRows(struct AppendBuffer* ab)
 		}
 		else
 		{
-			int len = g_editorConfig.row[fileRow].size;
+			int len = g_editorConfig.row[fileRow].size - g_editorConfig.colOffset;
+			if (len < 0)
+			{
+				len = 0;
+			}
 			if (len > g_editorConfig.screenCols)
 			{
 				len = g_editorConfig.screenCols;
 			}
-			AppendBuffer_Append(ab, g_editorConfig.row[fileRow].chars, len);
+			AppendBuffer_Append(ab, &g_editorConfig.row[fileRow].chars[g_editorConfig.colOffset], len);
 		}
 
 		AppendBuffer_Append(ab, "\x1b[K", 3);
@@ -423,10 +436,7 @@ void EditorMoveCursor(int key)
 		}
 		break;
 	case ARROW_RIGHT:
-		if (g_editorConfig.cursorX < g_editorConfig.screenCols - 1)
-		{
-			++g_editorConfig.cursorX;
-		}
+		++g_editorConfig.cursorX;
 		break;
 	case ARROW_UP:
 		if (g_editorConfig.cursorY > 0)
@@ -487,6 +497,7 @@ void InitEditor()
 	g_editorConfig.numRows = 0;
 	g_editorConfig.row = NULL;
 	g_editorConfig.rowOffset = 0;
+	g_editorConfig.colOffset = 0;
 
 	if (GetWindowSize(&g_editorConfig.screenRows, &g_editorConfig.screenCols) == -1)
 	{
