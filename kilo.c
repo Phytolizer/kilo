@@ -4,6 +4,7 @@
 #define _BSD_SOURCE
 #define _GNU_SOURCE
 
+#include <config.h>
 #include <ctype.h>
 #include <errno.h>
 #include <stdbool.h>
@@ -14,7 +15,6 @@
 #include <sys/types.h>
 #include <termios.h>
 #include <unistd.h>
-#include "config.h"
 
 // #endregion
 
