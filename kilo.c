@@ -40,7 +40,9 @@ enum EditorKey {
 
 typedef struct EditorRow {
   int size;
+  int renderSize;
   char* chars;
+  char* render;
 } EditorRow;
 
 struct EditorConfig {
@@ -214,6 +216,31 @@ int GetWindowSize(int* rows, int* cols) {
 
 // #region row operations
 
+void Editor_UpdateRow(EditorRow* row) {
+  int tabs = 0;
+  for (int j = 0; j < row->size; j++) {
+    if (row->chars[j] == '\t') {
+      tabs++;
+    }
+  }
+  free(row->render);
+  row->render = malloc(row->size + tabs * 7 + 1);
+
+  int idx = 0;
+  for (int j = 0; j < row->size; ++j) {
+    if (row->chars[j] == '\t') {
+      row->render[idx++] = ' ';
+      while (idx % 8 != 0) {
+        row->render[idx++] = ' ';
+      }
+    } else {
+      row->render[idx++] = row->chars[j];
+    }
+  }
+  row->render[idx] = '\0';
+  row->renderSize = idx;
+}
+
 void Editor_AppendRow(char* s, size_t len) {
   g_editorConfig.row = realloc(
       g_editorConfig.row, sizeof(EditorRow) * (g_editorConfig.numRows + 1));
@@ -223,6 +250,11 @@ void Editor_AppendRow(char* s, size_t len) {
   g_editorConfig.row[at].chars = malloc(len + 1);
   memcpy(g_editorConfig.row[at].chars, s, len);
   g_editorConfig.row[at].chars[len] = '\0';
+
+  g_editorConfig.row[at].renderSize = 0;
+  g_editorConfig.row[at].render = NULL;
+  Editor_UpdateRow(&g_editorConfig.row[at]);
+
   ++g_editorConfig.numRows;
 }
 
@@ -326,7 +358,8 @@ void Editor_DrawRows(struct AppendBuffer* ab) {
         AppendBuffer_Append(ab, "~", 1);
       }
     } else {
-      int len = g_editorConfig.row[fileRow].size - g_editorConfig.colOffset;
+      int len =
+          g_editorConfig.row[fileRow].renderSize - g_editorConfig.colOffset;
       if (len < 0) {
         len = 0;
       }
@@ -334,7 +367,7 @@ void Editor_DrawRows(struct AppendBuffer* ab) {
         len = g_editorConfig.screenCols;
       }
       AppendBuffer_Append(
-          ab, &g_editorConfig.row[fileRow].chars[g_editorConfig.colOffset],
+          ab, &g_editorConfig.row[fileRow].render[g_editorConfig.colOffset],
           len);
     }
 
