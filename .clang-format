@@ -1,5 +1,3 @@
 ---
-BasedOnStyle: Microsoft
+BasedOnStyle: Chromium
 PointerAlignment: Left
-TabWidth: 4
-UseTab: ForIndentation

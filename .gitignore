@@ -128,3 +128,4 @@ fabric.properties
 # Visual Studio Code
 /build
 /.cache
+/.vscode
