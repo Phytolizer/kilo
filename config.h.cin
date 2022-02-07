@@ -1,3 +1,0 @@
-#pragma once
-
-#define KILO_VERSION "${PROJECT_VERSION}"
