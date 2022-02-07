@@ -2,3 +2,5 @@ bin/
 obj/
 Makefile
 kilo.make
+
+build/dev

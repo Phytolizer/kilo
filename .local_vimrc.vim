@@ -1,1 +1,1 @@
-set makeprg=premake5\ gmake2
+set makeprg=cmake\ --build\ --preset\ dev
