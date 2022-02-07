@@ -1,5 +1,4 @@
-
-kilo
-kilo.o
+bin/
+obj/
 Makefile
 kilo.make
