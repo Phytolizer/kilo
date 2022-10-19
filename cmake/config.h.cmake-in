@@ -1,0 +1,6 @@
+#ifndef CONFIG_H_CMAKE_IN_
+#define CONFIG_H_CMAKE_IN_
+
+#define PROJECT_SOURCE_DIR "@PROJECT_SOURCE_DIR@"
+
+#endif  // CONFIG_H_CMAKE_IN_

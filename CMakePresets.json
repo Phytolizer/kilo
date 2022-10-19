@@ -1,0 +1,125 @@
+{
+    "version": 3,
+    "configurePresets": [
+        {
+            "name": "linux-base",
+            "hidden": true,
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/out/build/${presetName}",
+            "installDir": "${sourceDir}/out/install/${presetName}",
+            "cacheVariables": {
+                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+            },
+            "condition": {
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Linux"
+            }
+        },
+        {
+            "name": "windows-base",
+            "hidden": true,
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/out/build/${presetName}",
+            "installDir": "${sourceDir}/out/install/${presetName}",
+            "cacheVariables": {
+                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+                "CMAKE_C_COMPILER": "cl.exe"
+            },
+            "condition": {
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Windows"
+            }
+        },
+        {
+            "name": "wflags",
+            "hidden": true,
+            "cacheVariables": {
+                "KILO_WFLAGS": "ON"
+            }
+        },
+        {
+            "name": "dev",
+            "displayName": "x64 Debug",
+            "inherits": ["linux-base", "wflags"],
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug"
+            }
+        },
+        {
+            "name": "dev-win",
+            "displayName": "x64 Debug",
+            "inherits": ["windows-base"],
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "VCPKG_TARGET_TRIPLET": "x64-windows"
+            }
+        },
+        {
+            "name": "dev-san",
+            "displayName": "x64 Debug (Sanitizers)",
+            "inherits": ["dev", "wflags"],
+            "cacheVariables": {
+                "KILO_SANITIZE": "ON"
+            }
+        },
+        {
+            "name": "dist",
+            "displayName": "x64 Release",
+            "inherits": "dev",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release"
+            }
+        },
+        {
+            "name": "dist-win",
+            "displayName": "x64 Release",
+            "inherits": "dev-win",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release",
+                "VCPKG_TARGET_TRIPLET": "x64-windows"
+            }
+        }
+    ],
+    "buildPresets": [
+        {
+            "name": "dev",
+            "configurePreset": "dev"
+        },
+        {
+            "name": "dev-win",
+            "configurePreset": "dev-win",
+            "configuration": "Debug"
+        },
+        {
+            "name": "dist",
+            "configurePreset": "dist"
+        },
+        {
+            "name": "dist-win",
+            "configurePreset": "dist-win",
+            "configuration": "Release"
+        }
+    ],
+    "testPresets": [
+        {
+            "name": "dev",
+            "configurePreset": "dev"
+        },
+        {
+            "name": "dev-win",
+            "configurePreset": "dev-win",
+            "configuration": "Debug"
+        },
+        {
+            "name": "dist",
+            "configurePreset": "dist"
+        },
+        {
+            "name": "dist-win",
+            "configurePreset": "dist-win",
+            "configuration": "Release"
+        }
+    ]
+}
